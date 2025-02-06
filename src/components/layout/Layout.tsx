@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import Bottom from "./Bottom";
 import Header from "./Header";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { connectSSE } from "../../services/sseService";
 import { chatNotificationStore } from "../../stores/chatNotificationStore";
 import { chatIconStore } from "../../stores/chatIconStore";
@@ -20,6 +20,13 @@ const Layout = ({ children }: LayoutProps) => {
     (state) => state.setUnreadNotifications
   );
   const setShake = chatIconStore((state) => state.setShake);
+
+  const [isChatPage, setIsChatPage] = useState(false);
+  const prevPathnameRef = useRef(location.pathname);
+
+  useLayoutEffect(() => {
+    setIsChatPage(location.pathname.includes("chats"));
+  }, [location]);
 
   // useEffect(() => {
   //   if (isNewMessage) {
@@ -47,7 +54,7 @@ const Layout = ({ children }: LayoutProps) => {
         setUnreadMessages(data);
       },
       onChatNotification: (data) => {
-        if (location.pathname.startsWith("/chats")) {
+        if (isChatPage || prevPathnameRef.current.includes("chats")) {
           console.log("sse pass");
           return;
         } else {
@@ -61,6 +68,8 @@ const Layout = ({ children }: LayoutProps) => {
       eventSource.close();
     };
   }, []);
+
+  prevPathnameRef.current = location.pathname;
   return (
     <LayoutStyle>
       <Header />
