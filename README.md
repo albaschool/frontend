@@ -67,12 +67,12 @@
 <br />
 
 ### ⏰ 스케줄 
-<img src="https://github.com/user-attachments/assets/476fd4ff-6ab3-4719-ab5f-80ba2fa4cdf6" width="250" height="500" alt="스케줄(사장)">
-<img src="https://github.com/user-attachments/assets/912f1130-7049-4a8c-b8d0-31d409b131d1" width="250" height="500" alt="스케줄 등록">
-<img src="https://github.com/user-attachments/assets/e1b84916-53a4-4386-af73-3a8e5962207a" width="250" height="500" alt="스케줄 수정"><br />
-사장은 자신의 가게에 등록되어 있는 알바의 근무 스케줄을 추가 및 수정할 수 있습니다.<br />
-<img src="https://github.com/user-attachments/assets/7759372b-c8bf-42ae-b631-be617936802b" width="250" height="500" alt="스케줄(알바)"><br />
-알바는 사장이 등록한 스케줄을 확인하고, 개인 일정을 선택하여 여러 아르바이트를 병행하는 경우에도 자신의 주간 스케줄을 한눈에 확인할 수 있습니다.
+<img src="https://github.com/user-attachments/assets/476fd4ff-6ab3-4719-ab5f-80ba2fa4cdf6" width="200" height="400" alt="스케줄(사장)">
+<img src="https://github.com/user-attachments/assets/912f1130-7049-4a8c-b8d0-31d409b131d1" width="200" height="400" alt="스케줄 등록">
+<img src="https://github.com/user-attachments/assets/e1b84916-53a4-4386-af73-3a8e5962207a" width="200" height="400" alt="스케줄 수정">
+<img src="https://github.com/user-attachments/assets/7759372b-c8bf-42ae-b631-be617936802b" width="200" height="400" alt="스케줄(알바)"><br />
+사장은 자신의 가게에 등록되어 있는 알바의 근무 스케줄을 추가 및 수정할 수 있습니다.알바는 사장이 등록한 스케줄을 확인하고, 개인 일정을 선택하여 여러 아르바이트를 병행하는 경우에도 
+자신의 주간 스케줄을 한눈에 확인할 수 있습니다.
 
 <br />
 
