@@ -59,40 +59,40 @@
 <br />
 
 ### 🏪 가게 등록
-<img src="https://github.com/user-attachments/assets/512919b8-fdcd-48b4-997e-67aab68a9579" width="320" height="600" alt="가게 등록(사장)">
-<img src="https://github.com/user-attachments/assets/7ff5701f-99de-4443-aaed-4004588fa61d" width="320" height="600" alt="가게 수정(사장)">
-<img src="https://github.com/user-attachments/assets/f8bcf1a7-581d-4d8c-9c08-77ac4829cb16" width="320" height="600" alt="근무지 등록(알바)"><br />
+<img src="https://github.com/user-attachments/assets/512919b8-fdcd-48b4-997e-67aab68a9579" width="250" height="500" alt="가게 등록(사장)">
+<img src="https://github.com/user-attachments/assets/7ff5701f-99de-4443-aaed-4004588fa61d" width="250" height="500" alt="가게 수정(사장)">
+<img src="https://github.com/user-attachments/assets/f8bcf1a7-581d-4d8c-9c08-77ac4829cb16" width="250" height="500" alt="근무지 등록(알바)"><br />
 사장은 자신의 가게의 정보를 등록할 수 있고, 알바는 가게 코드와 비밀번호를 입력하여 자신의 근무지를 추가할 수 있습니다. 
 
 <br />
 
 ### ⏰ 스케줄 
-<img src="https://github.com/user-attachments/assets/476fd4ff-6ab3-4719-ab5f-80ba2fa4cdf6" width="320" height="600" alt="스케줄(사장)">
-<img src="https://github.com/user-attachments/assets/912f1130-7049-4a8c-b8d0-31d409b131d1" width="320" height="600" alt="스케줄 등록">
-<img src="https://github.com/user-attachments/assets/e1b84916-53a4-4386-af73-3a8e5962207a" width="320" height="600" alt="스케줄 수정"><br />
+<img src="https://github.com/user-attachments/assets/476fd4ff-6ab3-4719-ab5f-80ba2fa4cdf6" width="250" height="500" alt="스케줄(사장)">
+<img src="https://github.com/user-attachments/assets/912f1130-7049-4a8c-b8d0-31d409b131d1" width="250" height="500" alt="스케줄 등록">
+<img src="https://github.com/user-attachments/assets/e1b84916-53a4-4386-af73-3a8e5962207a" width="250" height="500" alt="스케줄 수정"><br />
 사장은 자신의 가게에 등록되어 있는 알바의 근무 스케줄을 추가 및 수정할 수 있습니다.<br />
-<img src="https://github.com/user-attachments/assets/7759372b-c8bf-42ae-b631-be617936802b" width="320" height="600" alt="스케줄(알바)"><br />
+<img src="https://github.com/user-attachments/assets/7759372b-c8bf-42ae-b631-be617936802b" width="250" height="500" alt="스케줄(알바)"><br />
 알바는 사장이 등록한 스케줄을 확인하고, 개인 일정을 선택하여 여러 아르바이트를 병행하는 경우에도 자신의 주간 스케줄을 한눈에 확인할 수 있습니다.
 
 <br />
 
 ### 📚 교육
-<img src="https://github.com/user-attachments/assets/41cc076c-2b90-4173-b946-d4d1c507f39d" width="320" height="600" alt="교육 목록(사장)">
-<img src="https://github.com/user-attachments/assets/356dda8d-d08e-47c7-b1e1-3a92961b09b1" width="320" height="600" alt="교육 게시글 작성(사장)">
-<img src="https://github.com/user-attachments/assets/03e175b2-1f8d-4dc8-b703-691de5153200" width="320" height="600" alt="교육 게시글 수정(사장)"><br />
+<img src="https://github.com/user-attachments/assets/41cc076c-2b90-4173-b946-d4d1c507f39d" width="250" height="500" alt="교육 목록(사장)">
+<img src="https://github.com/user-attachments/assets/356dda8d-d08e-47c7-b1e1-3a92961b09b1" width="250" height="500" alt="교육 게시글 작성(사장)">
+<img src="https://github.com/user-attachments/assets/03e175b2-1f8d-4dc8-b703-691de5153200" width="250" height="500" alt="교육 게시글 수정(사장)"><br />
 사장은 등록한 가게의 업종에 따라 기본적으로 제공되는 교육 페이지의 템플릿을 확인할 수 있습니다. 이를 이용하여 쉽게 교육 내용을 작성할 수 있습니다. 
 <br />
-<img src="https://github.com/user-attachments/assets/8f990d16-e8de-4617-9350-d5a277243de6" width="320" height="600" alt="가게 목록">
-<img src="https://github.com/user-attachments/assets/e81267a9-baeb-42c3-8d70-49cc79e5adc7" width="320" height="600" alt="교육 목록(알바)">
-<img src="https://github.com/user-attachments/assets/10d9d388-248a-4398-913d-d2ffa2546aa3" width="320" height="600" alt="교육 게시글(알바)"><br />
+<img src="https://github.com/user-attachments/assets/8f990d16-e8de-4617-9350-d5a277243de6" width="250" height="500" alt="가게 목록">
+<img src="https://github.com/user-attachments/assets/e81267a9-baeb-42c3-8d70-49cc79e5adc7" width="250" height="500" alt="교육 목록(알바)">
+<img src="https://github.com/user-attachments/assets/10d9d388-248a-4398-913d-d2ffa2546aa3" width="250" height="500" alt="교육 게시글(알바)"><br />
 알바는 게시글을 통해 업무 관련 정보를 반복적으로 학습하여 근무 환경에 빠르게 적응할 수 있습니다.
 
 <br />
 
 ### 💬 채팅
-<img src="https://github.com/user-attachments/assets/9b4ad5d2-dbec-4453-ab4e-405f03bb9d26" width="300" height="600" alt="채팅 목록">
-<img src="https://github.com/user-attachments/assets/4865d9fd-f1c1-4dbd-b25c-6bd77d1a474a" width="300" height="600" alt="채팅방">
-<img src="https://github.com/user-attachments/assets/19f06d44-72ff-4ccb-b45e-5240b39b40a7" width="300" height="600" alt="채팅 참여자 목록"><br />
+<img src="https://github.com/user-attachments/assets/9b4ad5d2-dbec-4453-ab4e-405f03bb9d26" width="250" height="500" alt="채팅 목록">
+<img src="https://github.com/user-attachments/assets/4865d9fd-f1c1-4dbd-b25c-6bd77d1a474a" width="250" height="500" alt="채팅방">
+<img src="https://github.com/user-attachments/assets/19f06d44-72ff-4ccb-b45e-5240b39b40a7" width="250" height="500" alt="채팅 참여자 목록"><br />
 가게 생성 시에 채팅방은 자동으로 생성되며 알바생은 가게 등록 시 채팅방에 자동으로 참여됩니다. 업무용 메신저로 개인 정보를 보호할 수 있으며 직원 간 원활한 소통으로 협업 환경이 개선됩니다. 
 
 <br />
