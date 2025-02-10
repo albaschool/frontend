@@ -51,9 +51,9 @@
 
 ## ✅ 기능 소개
 ### 👤로그인, 회원가입
-<img src="https://github.com/user-attachments/assets/5b053c7d-6e7d-4471-8252-c022ebda768d" width="200" height="400" alt="로그인">
-<img src="https://github.com/user-attachments/assets/b1c76e08-adac-442c-9569-30064d016958" width="200" height="400" alt="유형 선택">
-<img src="https://github.com/user-attachments/assets/c33cad3b-5c83-42cc-b9e2-78c4db8867da" width="200" height="400" alt="회원가입"><br />
+<img src="https://github.com/user-attachments/assets/5b053c7d-6e7d-4471-8252-c022ebda768d" width="300" height="600" alt="로그인">
+<img src="https://github.com/user-attachments/assets/b1c76e08-adac-442c-9569-30064d016958" width="300" height="600" alt="유형 선택">
+<img src="https://github.com/user-attachments/assets/c33cad3b-5c83-42cc-b9e2-78c4db8867da" width="300" height="600" alt="회원가입"><br />
 사용자는 이용 목적(사업자, 직원)에 따라 회원가입을 하고, 서비스를 이용할 수 있습니다. 
 
 <br />
