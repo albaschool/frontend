@@ -129,7 +129,12 @@
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-blue?logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=white)
+![ReactQuery](https://img.shields.io/badge/Reactquery-%23FF4154?logo=reactquery&logoColor=white)
+![Figma](https://img.shields.io/badge/Figma-%23F24E1E?logo=figma&logoColor=white)
 ![MUI](https://img.shields.io/badge/MUI-007FFF?style=flat&logo=mui&logoColor=fff)
+![Styled-components](https://img.shields.io/badge/Styledcomponents-%23DB7093?logo=styledcomponents&logoColor=white)
+
+
 
 
 
