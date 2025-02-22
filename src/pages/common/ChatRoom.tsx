@@ -11,6 +11,7 @@ import { IChatMember, Message } from "../../types/chat";
 import { getToken } from "../../stores/authStore";
 import { chatNotificationStore } from "../../stores/chatNotificationStore";
 import { chatIconStore } from "../../stores/chatIconStore";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const ChatRoom = () => {
   const roomId = useParams().id;
@@ -30,6 +31,10 @@ const ChatRoom = () => {
   const socketRef = useRef<Socket>();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  const [page, setPage] = useState(1); // 페이지 상태 추가
+  const [hasMore, setHasMore] = useState(true); // 더 가져올 메시지가 있는지 상태 추가
+  const [lastMessageId, setLastMessageId] = useState<string | null>(null);
+
   const scrollToBottom = () => {
     if (scrollContainerRef.current) {
       console.log("Set scrollTop to:", scrollContainerRef.current.scrollHeight);
@@ -45,12 +50,47 @@ const ChatRoom = () => {
 
   useLayoutEffect(() => {
     scrollToBottom();
-    // setTimeout(() => {
-    //   scrollToBottom();
-    // }, 400);
   }, []);
+  // const test = getMessages(roomId as string, "1", "pTwP2I15G6UE");
+  // console.log(test);
+
+  const fetchMoreMessages = async () => {
+    if (!roomId) return;
+
+    // 페이지와 messageId를 함께 요청
+    const fetchedMessages = await getMessages(
+      roomId,
+      page.toString(),
+      lastMessageId || undefined
+    );
+    console.log(fetchedMessages);
+
+    if (fetchedMessages.chatRoomDetail.messages.length === 0) {
+      setHasMore(false); // 더 이상 로드할 메시지가 없으면 종료
+      return;
+    }
+
+    // 첫 번째 호출에서만 마지막 메시지 ID 저장
+    if (!lastMessageId) {
+      const lastFetchedMessage =
+        fetchedMessages.chatRoomDetail.messages.slice(-1)[0];
+      if (lastFetchedMessage) {
+        setLastMessageId(lastFetchedMessage.id); // 가장 마지막 메시지 ID 저장
+      }
+    }
+
+    // 기존 메시지 앞에 새 메시지 추가
+    setMessages((prevMessages) => [
+      ...fetchedMessages.chatRoomDetail.messages,
+      ...prevMessages,
+    ]);
+
+    setPage((prevPage) => prevPage + 1); // 페이지 증가
+  };
 
   useEffect(() => {
+    fetchMoreMessages();
+
     socketRef.current = io(`${import.meta.env.VITE_BACKEND_URL}/room`, {
       path: "/socket.io/",
       transports: ["websocket"],
@@ -86,15 +126,15 @@ const ChatRoom = () => {
       ]);
     });
 
-    const fetchMessages = async () => {
-      if (roomId) {
-        const fetchedMessages = await getMessages(roomId, "1");
-        setMessages(fetchedMessages.chatRoomDetail.messages);
-        setMembers(fetchedMessages.chatRoomDetail.members);
-      }
-    };
+    // const fetchMessages = async () => {
+    //   if (roomId) {
+    //     const fetchedMessages = await getMessages(roomId, "1");
+    //     setMessages(fetchedMessages.chatRoomDetail.messages);
+    //     setMembers(fetchedMessages.chatRoomDetail.members);
+    //   }
+    // };
 
-    fetchMessages();
+    // fetchMessages();
 
     return () => {
       socket.emit("leaveRoom", { roomId: roomId });
@@ -131,19 +171,56 @@ const ChatRoom = () => {
     textarea.style.height = textarea.scrollHeight + "px";
   };
 
+  useEffect(() => {
+    console.log("page", page);
+    console.log("lastMessageId", lastMessageId);
+  }, [page, lastMessageId]);
+
+  useEffect(() => {
+    const container = document.getElementById("scrollableDiv");
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (container.scrollTop === 0) {
+        console.log("🚀 맨 위 감지! 메시지 로드 호출");
+        console.log("page", page);
+        fetchMoreMessages();
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   return (
-    <ChatRoomContainer ref={scrollContainerRef}>
+    <ChatRoomContainer ref={scrollContainerRef} id="scrollableDiv">
       <ChatRoomHeaderStyle>
-        {menuOpen && <ChatMenu toggleMenu={toggleMenu} members={members}/>}
+        {menuOpen && <ChatMenu toggleMenu={toggleMenu} members={members} />}
 
         <ArrowBackIosOutlinedIcon onClick={goToChatList} />
         <span>
           <h6>{storeName}</h6>
-          <h6 style={{ color: "#7E7E7E", fontWeight: '100' }}>{headCount}</h6>
+          <h6 style={{ color: "#7E7E7E", fontWeight: "100" }}>{headCount}</h6>
         </span>
         <MenuOutlinedIcon sx={{ fontSize: 28 }} onClick={toggleMenu} />
       </ChatRoomHeaderStyle>
-      <ChatContainer messages={messages} members={members} />
+      <InfiniteScroll
+        dataLength={messages.length} // 현재 메시지 개수
+        next={fetchMoreMessages} // 추가 메시지 로드 함수
+        hasMore={hasMore} // 더 로드할 메시지가 있는지 여부
+        loader={<h4>Loading...</h4>} // 로딩 중일 때 표시할 컴포넌트
+        inverse={true} // 위로 스크롤 방식
+        scrollableTarget="scrollableDiv"
+        onScroll={(e) => {
+          const target = e.target as HTMLDivElement;
+          console.log("Scroll position:", target.scrollTop);
+          console.log(hasMore);
+        }}
+      >
+        <ChatContainer messages={messages} members={members} />
+      </InfiniteScroll>
       <ChatInputBoxStyle>
         <textarea
           id="message"
