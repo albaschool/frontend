@@ -34,6 +34,7 @@ const ChatRoom = () => {
   const [page, setPage] = useState(1); // 페이지 상태 추가
   const [hasMore, setHasMore] = useState(true); // 더 가져올 메시지가 있는지 상태 추가
   const [lastMessageId, setLastMessageId] = useState<string | null>(null);
+  const [isLoadingOldMessages, setIsLoadingOldMessages] = useState(false);
 
   const scrollToBottom = () => {
     if (scrollContainerRef.current) {
@@ -45,19 +46,19 @@ const ChatRoom = () => {
   };
 
   useEffect(() => {
-    scrollToBottom();
+    if (!isLoadingOldMessages) {
+      scrollToBottom();
+    }
   }, [messages]);
 
-  useLayoutEffect(() => {
-    scrollToBottom();
-  }, []);
-  // const test = getMessages(roomId as string, "1", "pTwP2I15G6UE");
-  // console.log(test);
+  const fetchMoreMessages = async (isOldMessage: boolean) => {
+    if (!roomId || !scrollContainerRef.current || !hasMore) return;
 
-  const fetchMoreMessages = async () => {
-    if (!roomId) return;
+    if (isOldMessage) setIsLoadingOldMessages(true);
+    const container = scrollContainerRef.current;
+    const previousScrollHeight = container.scrollHeight;
+    const previousScrollTop = container.scrollTop;
 
-    // 페이지와 messageId를 함께 요청
     const fetchedMessages = await getMessages(
       roomId,
       page.toString(),
@@ -67,6 +68,7 @@ const ChatRoom = () => {
 
     if (fetchedMessages.chatRoomDetail.messages.length === 0) {
       setHasMore(false); // 더 이상 로드할 메시지가 없으면 종료
+      console.log("sethasmore", hasMore);
       return;
     }
 
@@ -84,12 +86,19 @@ const ChatRoom = () => {
       ...fetchedMessages.chatRoomDetail.messages,
       ...prevMessages,
     ]);
+    console.log("isloading", isLoadingOldMessages);
 
-    setPage((prevPage) => prevPage + 1); // 페이지 증가
+    setPage((prevPage) => prevPage + 1);
+    if (isOldMessage) {
+      setTimeout(() => {
+        container.scrollTop =
+          container.scrollHeight - previousScrollHeight + previousScrollTop;
+      }, 0);
+    }
   };
 
   useEffect(() => {
-    fetchMoreMessages();
+    fetchMoreMessages(false);
 
     socketRef.current = io(`${import.meta.env.VITE_BACKEND_URL}/room`, {
       path: "/socket.io/",
@@ -174,7 +183,8 @@ const ChatRoom = () => {
   useEffect(() => {
     console.log("page", page);
     console.log("lastMessageId", lastMessageId);
-  }, [page, lastMessageId]);
+    console.log("sethasmore", hasMore);
+  }, [page, lastMessageId, hasMore]);
 
   useEffect(() => {
     const container = document.getElementById("scrollableDiv");
@@ -184,7 +194,11 @@ const ChatRoom = () => {
       if (container.scrollTop === 0) {
         console.log("🚀 맨 위 감지! 메시지 로드 호출");
         console.log("page", page);
-        fetchMoreMessages();
+        //setIsLoadingOldMessages(true);
+        fetchMoreMessages(true);
+        setTimeout(() => {
+          setIsLoadingOldMessages(false);
+        }, 1000);
       }
     };
 
@@ -192,7 +206,7 @@ const ChatRoom = () => {
     return () => {
       container.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [page, hasMore]);
 
   return (
     <ChatRoomContainer ref={scrollContainerRef} id="scrollableDiv">
@@ -206,21 +220,7 @@ const ChatRoom = () => {
         </span>
         <MenuOutlinedIcon sx={{ fontSize: 28 }} onClick={toggleMenu} />
       </ChatRoomHeaderStyle>
-      <InfiniteScroll
-        dataLength={messages.length} // 현재 메시지 개수
-        next={fetchMoreMessages} // 추가 메시지 로드 함수
-        hasMore={hasMore} // 더 로드할 메시지가 있는지 여부
-        loader={<h4>Loading...</h4>} // 로딩 중일 때 표시할 컴포넌트
-        inverse={true} // 위로 스크롤 방식
-        scrollableTarget="scrollableDiv"
-        onScroll={(e) => {
-          const target = e.target as HTMLDivElement;
-          console.log("Scroll position:", target.scrollTop);
-          console.log(hasMore);
-        }}
-      >
-        <ChatContainer messages={messages} members={members} />
-      </InfiniteScroll>
+      <ChatContainer messages={messages} members={members} />
       <ChatInputBoxStyle>
         <textarea
           id="message"
