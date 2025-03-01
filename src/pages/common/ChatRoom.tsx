@@ -3,14 +3,15 @@ import ArrowBackIosOutlinedIcon from "@mui/icons-material/ArrowBackIosOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import ChatContainer from "../../components/chat/ChatContainer";
 import ChatMenu from "../../components/chat/ChatMenu";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { io, Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
 import { getMessages } from "../../services/chatService";
 import { IChatMember, Message } from "../../types/chat";
 import { getToken } from "../../stores/authStore";
 import { chatNotificationStore } from "../../stores/chatNotificationStore";
 import { chatIconStore } from "../../stores/chatIconStore";
+import { chatroomSocket } from "../../services/socketService";
 
 const ChatRoom = () => {
   const roomId = useParams().id;
@@ -27,78 +28,91 @@ const ChatRoom = () => {
   );
   const setShake = chatIconStore((state) => state.setShake);
 
-  const socketRef = useRef<Socket>();
+  const socketRef = useRef<Socket | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [lastMessageId, setLastMessageId] = useState<string | null>(null);
+  const [isLoadingOldMessages, setIsLoadingOldMessages] = useState(false);
 
   const scrollToBottom = () => {
     if (scrollContainerRef.current) {
-      console.log("Set scrollTop to:", scrollContainerRef.current.scrollHeight);
       scrollContainerRef.current.scrollTop =
         scrollContainerRef.current.scrollHeight;
-      console.log("scrollTop after:", scrollContainerRef.current.scrollTop);
     }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    if (!isLoadingOldMessages) {
+      scrollToBottom();
+    }
   }, [messages]);
 
-  useLayoutEffect(() => {
-    scrollToBottom();
-    // setTimeout(() => {
-    //   scrollToBottom();
-    // }, 400);
-  }, []);
+  const fetchMessages = async () => {
+    if (!roomId) return;
+
+    const fetchedMessages = await getMessages(
+      roomId,
+      page.toString(),
+      lastMessageId || undefined
+    );
+    console.log(fetchedMessages);
+
+    if (fetchedMessages.chatRoomDetail.messages.length === 0) {
+      setHasMore(false);
+      return;
+    }
+
+    if (!lastMessageId) {
+      const lastFetchedMessage =
+        fetchedMessages.chatRoomDetail.messages.slice(-1)[0];
+      if (lastFetchedMessage) {
+        setLastMessageId(lastFetchedMessage.id);
+      }
+    }
+
+    setMessages((prevMessages) => [
+      ...fetchedMessages.chatRoomDetail.messages,
+      ...prevMessages,
+    ]);
+    setMembers(fetchedMessages.chatRoomDetail.members);
+
+    setPage((prevPage) => prevPage + 1);
+  };
+
+  const fetchMoreMessages = async () => {
+    if (!scrollContainerRef.current) return;
+
+    setIsLoadingOldMessages(true);
+
+    //메세지 로드 전 스크롤 위치 저장
+    const container = scrollContainerRef.current;
+    const previousScrollHeight = container.scrollHeight;
+    const previousScrollTop = container.scrollTop;
+
+    await fetchMessages();
+
+    //메세지 로드 후 스크롤 원위치
+    setTimeout(() => {
+      container.scrollTop =
+        container.scrollHeight - previousScrollHeight + previousScrollTop;
+      setIsLoadingOldMessages(false);
+    }, 0);
+  };
 
   useEffect(() => {
-    socketRef.current = io(`${import.meta.env.VITE_BACKEND_URL}/room`, {
-      path: "/socket.io/",
-      transports: ["websocket"],
-      auth: {
-        token: `Bearer ${token}`,
-      },
-    });
-
-    const socket = socketRef.current;
-    if (!socket || !roomId) return;
-
-    socket.on("connect", () => {
-      console.log("연결 완료", socket.id);
-      socket.emit("joinRoom", { roomId: roomId });
-    });
-
-    socket.on("newMessage", (data) => {
-      console.log(data);
-      setUnreadMessages(true);
-      setShake(true);
-    });
-
-    socket.on("broadcast", (newMessage) => {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          content: newMessage.content,
-          createdAt: new Date().toISOString(),
-          id: newMessage.messageId,
-          senderId: newMessage.senderId,
-          name: newMessage.name,
-        },
-      ]);
-    });
-
-    const fetchMessages = async () => {
-      if (roomId) {
-        const fetchedMessages = await getMessages(roomId, "1");
-        setMessages(fetchedMessages.chatRoomDetail.messages);
-        setMembers(fetchedMessages.chatRoomDetail.members);
-      }
-    };
-
     fetchMessages();
-
+    socketRef.current = chatroomSocket(
+      roomId as string,
+      token as string,
+      setMessages,
+      setUnreadMessages,
+      setShake
+    );
     return () => {
-      socket.emit("leaveRoom", { roomId: roomId });
-      socket.disconnect();
+      socketRef.current?.emit("leaveRoom", { roomId });
+      socketRef.current?.disconnect();
     };
   }, [roomId, token]);
 
@@ -131,15 +145,33 @@ const ChatRoom = () => {
     textarea.style.height = textarea.scrollHeight + "px";
   };
 
+  //무한 스크롤
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (container.scrollTop === 0 && hasMore) {
+        console.log("맨 위 감지! 메시지 로드 호출");
+        fetchMoreMessages();
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, [page, hasMore]);
+
   return (
     <ChatRoomContainer ref={scrollContainerRef}>
       <ChatRoomHeaderStyle>
-        {menuOpen && <ChatMenu toggleMenu={toggleMenu} members={members}/>}
+        {menuOpen && <ChatMenu toggleMenu={toggleMenu} members={members} />}
 
         <ArrowBackIosOutlinedIcon onClick={goToChatList} />
         <span>
           <h6>{storeName}</h6>
-          <h6 style={{ color: "#7E7E7E", fontWeight: '100' }}>{headCount}</h6>
+          <h6 style={{ color: "#7E7E7E", fontWeight: "100" }}>{headCount}</h6>
         </span>
         <MenuOutlinedIcon sx={{ fontSize: 28 }} onClick={toggleMenu} />
       </ChatRoomHeaderStyle>
