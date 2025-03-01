@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import ChatListBox from "../../components/chat/ChatListBox";
-import { io, Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
 import { IChatRoom } from "../../types/chat";
 import { getToken } from "../../stores/authStore";
 import { chatNotificationStore } from "../../stores/chatNotificationStore";
 import { chatListTime } from "../../utils/chatListTime";
+import { chatlistSocket } from "../../services/socketService";
 
 const ChatList = () => {
   const [displayData, setDisplayData] = useState<IChatRoom[]>([]);
@@ -16,30 +17,10 @@ const ChatList = () => {
   );
 
   useEffect(() => {
-    socketRef.current = io(`${import.meta.env.VITE_BACKEND_URL}/chat`, {
-      path: "/socket.io/",
-      transports: ["websocket"],
-      auth: {
-        token: `Bearer ${token}`,
-      },
-    });
-
-    const socket = socketRef.current;
-
-    socket.on("connect", () => {
-      console.log("연결 완료", socket.id);
-    });
-
-    socket.on("initialize", (initialData) => {
-      setDisplayData(initialData.data);
-    });
-
-    socket.on("chatLists", (updatedChatLists) => {
-      setDisplayData(updatedChatLists.data);
-    });
+    socketRef.current = chatlistSocket(token as string, setDisplayData);
 
     return () => {
-      socket.disconnect();
+      socketRef.current?.disconnect();
     };
   }, [socketRef, token]);
 

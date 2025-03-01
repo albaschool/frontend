@@ -5,12 +5,13 @@ import ChatContainer from "../../components/chat/ChatContainer";
 import ChatMenu from "../../components/chat/ChatMenu";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { io, Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
 import { getMessages } from "../../services/chatService";
 import { IChatMember, Message } from "../../types/chat";
 import { getToken } from "../../stores/authStore";
 import { chatNotificationStore } from "../../stores/chatNotificationStore";
 import { chatIconStore } from "../../stores/chatIconStore";
+import { chatroomSocket } from "../../services/socketService";
 
 const ChatRoom = () => {
   const roomId = useParams().id;
@@ -27,7 +28,7 @@ const ChatRoom = () => {
   );
   const setShake = chatIconStore((state) => state.setShake);
 
-  const socketRef = useRef<Socket>();
+  const socketRef = useRef<Socket | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const [page, setPage] = useState(1);
@@ -37,10 +38,8 @@ const ChatRoom = () => {
 
   const scrollToBottom = () => {
     if (scrollContainerRef.current) {
-      console.log("Set scrollTop to:", scrollContainerRef.current.scrollHeight);
       scrollContainerRef.current.scrollTop =
         scrollContainerRef.current.scrollHeight;
-      console.log("scrollTop after:", scrollContainerRef.current.scrollTop);
     }
   };
 
@@ -102,51 +101,19 @@ const ChatRoom = () => {
     }, 0);
   };
 
-  const setupSocket = () => {
-    socketRef.current = io(`${import.meta.env.VITE_BACKEND_URL}/room`, {
-      path: "/socket.io/",
-      transports: ["websocket"],
-      auth: {
-        token: `Bearer ${token}`,
-      },
-    });
-
-    const socket = socketRef.current;
-    if (!socket || !roomId) return;
-
-    socket.on("connect", () => {
-      console.log("연결 완료", socket.id);
-      socket.emit("joinRoom", { roomId: roomId });
-    });
-
-    socket.on("newMessage", (data) => {
-      console.log(data);
-      setUnreadMessages(true);
-      setShake(true);
-    });
-
-    socket.on("broadcast", (newMessage) => {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          content: newMessage.content,
-          createdAt: new Date().toISOString(),
-          id: newMessage.messageId,
-          senderId: newMessage.senderId,
-          name: newMessage.name,
-        },
-      ]);
-    });
-
-    return () => {
-      socket.emit("leaveRoom", { roomId: roomId });
-      socket.disconnect();
-    };
-  };
-
   useEffect(() => {
     fetchMessages();
-    setupSocket();
+    socketRef.current = chatroomSocket(
+      roomId as string,
+      token as string,
+      setMessages,
+      setUnreadMessages,
+      setShake
+    );
+    return () => {
+      socketRef.current?.emit("leaveRoom", { roomId });
+      socketRef.current?.disconnect();
+    };
   }, [roomId, token]);
 
   const sendMessage = () => {
