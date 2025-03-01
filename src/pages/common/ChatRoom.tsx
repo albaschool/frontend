@@ -3,7 +3,7 @@ import ArrowBackIosOutlinedIcon from "@mui/icons-material/ArrowBackIosOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import ChatContainer from "../../components/chat/ChatContainer";
 import ChatMenu from "../../components/chat/ChatMenu";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 import { getMessages } from "../../services/chatService";
@@ -11,7 +11,6 @@ import { IChatMember, Message } from "../../types/chat";
 import { getToken } from "../../stores/authStore";
 import { chatNotificationStore } from "../../stores/chatNotificationStore";
 import { chatIconStore } from "../../stores/chatIconStore";
-import InfiniteScroll from "react-infinite-scroll-component";
 
 const ChatRoom = () => {
   const roomId = useParams().id;
@@ -31,8 +30,8 @@ const ChatRoom = () => {
   const socketRef = useRef<Socket>();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const [page, setPage] = useState(1); // 페이지 상태 추가
-  const [hasMore, setHasMore] = useState(true); // 더 가져올 메시지가 있는지 상태 추가
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [lastMessageId, setLastMessageId] = useState<string | null>(null);
   const [isLoadingOldMessages, setIsLoadingOldMessages] = useState(false);
 
@@ -51,13 +50,8 @@ const ChatRoom = () => {
     }
   }, [messages]);
 
-  const fetchMoreMessages = async (isOldMessage: boolean) => {
-    if (!roomId || !scrollContainerRef.current || !hasMore) return;
-
-    if (isOldMessage) setIsLoadingOldMessages(true);
-    const container = scrollContainerRef.current;
-    const previousScrollHeight = container.scrollHeight;
-    const previousScrollTop = container.scrollTop;
+  const fetchMessages = async () => {
+    if (!roomId) return;
 
     const fetchedMessages = await getMessages(
       roomId,
@@ -67,39 +61,48 @@ const ChatRoom = () => {
     console.log(fetchedMessages);
 
     if (fetchedMessages.chatRoomDetail.messages.length === 0) {
-      setHasMore(false); // 더 이상 로드할 메시지가 없으면 종료
-      console.log("sethasmore", hasMore);
+      setHasMore(false);
       return;
     }
 
-    // 첫 번째 호출에서만 마지막 메시지 ID 저장
     if (!lastMessageId) {
       const lastFetchedMessage =
         fetchedMessages.chatRoomDetail.messages.slice(-1)[0];
       if (lastFetchedMessage) {
-        setLastMessageId(lastFetchedMessage.id); // 가장 마지막 메시지 ID 저장
+        setLastMessageId(lastFetchedMessage.id);
       }
     }
 
-    // 기존 메시지 앞에 새 메시지 추가
     setMessages((prevMessages) => [
       ...fetchedMessages.chatRoomDetail.messages,
       ...prevMessages,
     ]);
-    console.log("isloading", isLoadingOldMessages);
+    setMembers(fetchedMessages.chatRoomDetail.members);
 
     setPage((prevPage) => prevPage + 1);
-    if (isOldMessage) {
-      setTimeout(() => {
-        container.scrollTop =
-          container.scrollHeight - previousScrollHeight + previousScrollTop;
-      }, 0);
-    }
   };
 
-  useEffect(() => {
-    fetchMoreMessages(false);
+  const fetchMoreMessages = async () => {
+    if (!scrollContainerRef.current) return;
 
+    setIsLoadingOldMessages(true);
+
+    //메세지 로드 전 스크롤 위치 저장
+    const container = scrollContainerRef.current;
+    const previousScrollHeight = container.scrollHeight;
+    const previousScrollTop = container.scrollTop;
+
+    await fetchMessages();
+
+    //메세지 로드 후 스크롤 원위치
+    setTimeout(() => {
+      container.scrollTop =
+        container.scrollHeight - previousScrollHeight + previousScrollTop;
+      setIsLoadingOldMessages(false);
+    }, 0);
+  };
+
+  const setupSocket = () => {
     socketRef.current = io(`${import.meta.env.VITE_BACKEND_URL}/room`, {
       path: "/socket.io/",
       transports: ["websocket"],
@@ -135,20 +138,15 @@ const ChatRoom = () => {
       ]);
     });
 
-    // const fetchMessages = async () => {
-    //   if (roomId) {
-    //     const fetchedMessages = await getMessages(roomId, "1");
-    //     setMessages(fetchedMessages.chatRoomDetail.messages);
-    //     setMembers(fetchedMessages.chatRoomDetail.members);
-    //   }
-    // };
-
-    // fetchMessages();
-
     return () => {
       socket.emit("leaveRoom", { roomId: roomId });
       socket.disconnect();
     };
+  };
+
+  useEffect(() => {
+    fetchMessages();
+    setupSocket();
   }, [roomId, token]);
 
   const sendMessage = () => {
@@ -180,25 +178,15 @@ const ChatRoom = () => {
     textarea.style.height = textarea.scrollHeight + "px";
   };
 
+  //무한 스크롤
   useEffect(() => {
-    console.log("page", page);
-    console.log("lastMessageId", lastMessageId);
-    console.log("sethasmore", hasMore);
-  }, [page, lastMessageId, hasMore]);
-
-  useEffect(() => {
-    const container = document.getElementById("scrollableDiv");
+    const container = scrollContainerRef.current;
     if (!container) return;
 
     const handleScroll = () => {
-      if (container.scrollTop === 0) {
-        console.log("🚀 맨 위 감지! 메시지 로드 호출");
-        console.log("page", page);
-        //setIsLoadingOldMessages(true);
-        fetchMoreMessages(true);
-        setTimeout(() => {
-          setIsLoadingOldMessages(false);
-        }, 1000);
+      if (container.scrollTop === 0 && hasMore) {
+        console.log("맨 위 감지! 메시지 로드 호출");
+        fetchMoreMessages();
       }
     };
 
@@ -209,7 +197,7 @@ const ChatRoom = () => {
   }, [page, hasMore]);
 
   return (
-    <ChatRoomContainer ref={scrollContainerRef} id="scrollableDiv">
+    <ChatRoomContainer ref={scrollContainerRef}>
       <ChatRoomHeaderStyle>
         {menuOpen && <ChatMenu toggleMenu={toggleMenu} members={members} />}
 
